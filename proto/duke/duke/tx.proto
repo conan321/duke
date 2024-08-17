@@ -1,0 +1,7 @@
+syntax = "proto3";
+package duke.duke;
+
+option go_package = "duke/x/duke/types";
+
+// Msg defines the Msg service.
+service Msg {}

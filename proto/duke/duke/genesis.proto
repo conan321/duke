@@ -1,0 +1,12 @@
+syntax = "proto3";
+package duke.duke;
+
+import "gogoproto/gogo.proto";
+import "duke/duke/params.proto";
+
+option go_package = "duke/x/duke/types";
+
+// GenesisState defines the duke module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}

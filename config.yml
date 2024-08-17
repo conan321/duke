@@ -1,0 +1,63 @@
+version: 1
+genesis:
+  chain_id: "duke"
+  app_state:
+    staking:
+      params:
+        bond_denom: "uduke"
+        unbonding_time: "1209600s"
+        max_validators: 20
+    slashing:
+      params:
+        signed_blocks_window: "1000"
+        downtime_jail_duration: "600s"
+        slash_fraction_downtime: "0.005000000000000000"
+    gov:
+      deposit_params:
+        min_deposit:
+          - amount: "1000000000000"
+            denom: "uduke"
+        max_deposit_period: "259200s"
+      voting_params:
+        voting_period: "259200s"
+    crisis:
+      constant_fee:
+        denom: "uduke"
+    mint:
+      params:
+        mint_denom: "uduke"
+        inflation_rate_change: "0.030000000000000000"
+        inflation_max: "0.045000000000000000"
+        inflation_min: "0.020000000000000000"
+        blocks_per_year: "3153600"
+    distribution:
+      params:
+        community_tax: "0.000000000000000000"
+accounts:
+  - name: App Mining
+    coins:
+      - 36000000000000000uduke
+    address: duke1qd2d0zyju4zyfx6fte03v3heydujn2nc4pz2qj
+  - name: Core Team
+    coins:
+      - 999000000000000uduke
+    address: duke1zy6gl9fvd9qn9ehd8l0ja5d2pvd2n8zngu0wcl
+  - name: Validator Reward
+    coins:
+      - 3000000000000000uduke
+    address: duke1ffp5zzr28py97wkvq3hr4k35g4ma4473lc9mat
+  - name: First Validator
+    coins:
+      - 1000000000000uduke
+client:
+  typescript:
+    path: ts-client
+  openapi:
+    path: docs/static/openapi.yml
+validators:
+  - name: First Validator
+    bonded: 1000000000000uduke
+    config:
+      consensus:
+        timeout_commit: "10s"
+        timeout_propose: "10s"
