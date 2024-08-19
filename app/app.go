@@ -115,6 +115,10 @@ import (
 	dukemodulekeeper "duke/x/duke/keeper"
 	dukemoduletypes "duke/x/duke/types"
 
+	autoburnmodule "duke/x/autoburn"
+	autoburnmodulekeeper "duke/x/autoburn/keeper"
+	autoburnmoduletypes "duke/x/autoburn/types"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 	errorsmod "cosmossdk.io/errors"
 	wasm "github.com/CosmWasm/wasmd/x/wasm"
@@ -268,6 +272,7 @@ var (
 		vesting.AppModuleBasic{},
 		consensus.AppModuleBasic{},
 		dukemodule.AppModuleBasic{},
+		autoburnmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 		wasm.AppModuleBasic{},
 		ibcfee.AppModuleBasic{},
@@ -283,6 +288,7 @@ var (
 		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
 		govtypes.ModuleName:            {authtypes.Burner},
 		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		autoburnmoduletypes.ModuleName: {authtypes.Burner},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 		wasmtypes.ModuleName: {authtypes.Burner},
 	}
@@ -347,7 +353,9 @@ type App struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper  capabilitykeeper.ScopedKeeper
 	ScopedWasmKeeper     capabilitykeeper.ScopedKeeper
-	DukeKeeper      dukemodulekeeper.Keeper
+	DukeKeeper           dukemodulekeeper.Keeper
+
+	AutoburnKeeper autoburnmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -397,6 +405,7 @@ func New(
 		feegrant.StoreKey, evidencetypes.StoreKey, ibctransfertypes.StoreKey, icahosttypes.StoreKey,
 		capabilitytypes.StoreKey, group.StoreKey, icacontrollertypes.StoreKey, consensusparamtypes.StoreKey,
 		dukemoduletypes.StoreKey, wasmtypes.StoreKey,
+		autoburnmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -671,6 +680,16 @@ func New(
 	)
 	dukeModule := dukemodule.NewAppModule(appCodec, app.DukeKeeper, app.AccountKeeper, app.BankKeeper)
 
+	app.AutoburnKeeper = *autoburnmodulekeeper.NewKeeper(
+		appCodec,
+		keys[autoburnmoduletypes.StoreKey],
+		keys[autoburnmoduletypes.MemStoreKey],
+		app.GetSubspace(autoburnmoduletypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+	)
+	autoburnModule := autoburnmodule.NewAppModule(appCodec, app.AutoburnKeeper, app.AccountKeeper, app.BankKeeper)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	/**** IBC Routing ****/
@@ -738,6 +757,7 @@ func New(
 		transferModule,
 		icaModule,
 		dukeModule,
+		autoburnModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)), // always be last to make sure that it checks for all invariants and not only part of them
@@ -771,6 +791,7 @@ func New(
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		dukemoduletypes.ModuleName,
+		autoburnmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 		wasmtypes.ModuleName,
 	)
@@ -798,6 +819,7 @@ func New(
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		dukemoduletypes.ModuleName,
+		autoburnmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 		wasmtypes.ModuleName,
 	)
@@ -830,6 +852,7 @@ func New(
 		vestingtypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		dukemoduletypes.ModuleName,
+		autoburnmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 		wasmtypes.ModuleName,
 	}
@@ -1095,6 +1118,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(dukemoduletypes.ModuleName)
+	paramsKeeper.Subspace(autoburnmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
