@@ -132,6 +132,7 @@ import (
 	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
 
 	appparams "duke/app/params"
+	v12 "duke/app/upgrades/v12"
 	"duke/docs"
 )
 
@@ -885,6 +886,9 @@ func New(
 	app.MountTransientStores(tkeys)
 	app.MountMemoryStores(memKeys)
 
+	// register upgrade
+	app.setupUpgradeHandlers()
+
 	// // initialize BaseApp
 	// anteHandler, err := ante.NewAnteHandler(
 	// 	ante.HandlerOptions{
@@ -895,9 +899,9 @@ func New(
 	// 		SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 	// 	},
 	// )
-	if err != nil {
-		panic(fmt.Errorf("failed to create AnteHandler: %w", err))
-	}
+	// if err != nil {
+	// 	panic(fmt.Errorf("failed to create AnteHandler: %w", err))
+	// }
 
 	// app.SetAnteHandler(anteHandler)
 	app.setAnteHandler(encodingConfig.TxConfig, wasmConfig, keys[wasmtypes.StoreKey])
@@ -1133,4 +1137,28 @@ func (app *App) SimulationManager() *module.SimulationManager {
 // ModuleManager returns the app ModuleManager
 func (app *App) ModuleManager() *module.Manager {
 	return app.mm
+}
+
+func (app *App) setupUpgradeHandlers() {
+	app.UpgradeKeeper.SetUpgradeHandler(v12.UpgradeName, v12.CreateUpgradeHandler(app.mm, app.configurator))
+
+	// When a planned update height is reached, the old binary will panic
+	// writing on disk the height and name of the update that triggered it
+	// This will read that value, and execute the preparations for the upgrade.
+	upgradeInfo, err := app.UpgradeKeeper.ReadUpgradeInfoFromDisk()
+	if err != nil {
+		panic(fmt.Errorf("failed to read upgrade info from disk: %w", err))
+	}
+
+	if app.UpgradeKeeper.IsSkipHeight(upgradeInfo.Height) {
+		return
+	}
+
+	if upgradeInfo.Name == v12.UpgradeName {
+		storeUpgrades := &storetypes.StoreUpgrades{
+			Added: []string{autoburnmoduletypes.ModuleName},
+		}
+		// configure store loader that checks if version == upgradeHeight and applies store upgrades
+		app.SetStoreLoader(upgradetypes.UpgradeStoreLoader(upgradeInfo.Height, storeUpgrades))
+	}
 }

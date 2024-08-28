@@ -13,12 +13,11 @@ genesis:
         downtime_jail_duration: "600s"
         slash_fraction_downtime: "0.005000000000000000"
     gov:
-      deposit_params:
+      params:
         min_deposit:
           - amount: "1000000000000"
             denom: "uduke"
         max_deposit_period: "259200s"
-      voting_params:
         voting_period: "259200s"
     crisis:
       constant_fee:
@@ -37,7 +36,7 @@ accounts:
   - name: App Mining
     coins:
       - 36000000000000000uduke
-    address: duke1qd2d0zyju4zyfx6fte03v3heydujn2nc4pz2qj
+    address: duke1xr87tt8zrqc5fv0qay7f6t9n3ezsns4v4ukxjq
   - name: Core Team
     coins:
       - 999000000000000uduke

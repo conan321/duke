@@ -7,10 +7,10 @@ import (
 
 func UpdateGovMinDepositParam(ctx sdk.Context, keeper govkeeper.Keeper) {
 	params := keeper.GetParams(ctx)
-	newMinDeposit := []sdk.Coin{}
+	coins := []sdk.Coin{}
 	for _, minDeposit := range params.MinDeposit {
-		newMinDeposit = append(newMinDeposit, sdk.NewCoin(MinDepositDenom, minDeposit.Amount))
+		coins = append(coins, sdk.NewCoin(MinDepositDenom, minDeposit.Amount))
 	}
-	params.MinDeposit = newMinDeposit
+	params.MinDeposit = coins
 	keeper.SetParams(ctx, params)
 }

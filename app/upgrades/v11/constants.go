@@ -1,6 +1,6 @@
 package v11
 
 const (
-	HaltBlockHeight = 40
+	ForkBlockHeight = 50
 	MinDepositDenom = "uduke"
 )
