@@ -1,0 +1,12 @@
+syntax = "proto3";
+package duke.autoburn;
+
+import "gogoproto/gogo.proto";
+import "duke/autoburn/params.proto";
+
+option go_package = "duke/x/autoburn/types";
+
+// GenesisState defines the autoburn module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
